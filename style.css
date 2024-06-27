@@ -4,3 +4,13 @@
 body {
   font-family: sans-serif !important;
 }
+
+.comment-body-collapsed {
+ /* position: relative;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 5; /* Number of lines to show */
+  -webkit-box-orient: vertical;
+*/
+}

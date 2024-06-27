@@ -4,14 +4,24 @@
 */
 
 document.addEventListener('DOMContentLoaded', () => {
+	
   const nameList = document.getElementById('name-list');
   const nameInput = document.getElementById('name-input');
   const addNameButton = document.getElementById('add-name');
+  const histogramCheckbox = document.getElementById('histogram');
 
   // Load the names from storage
-  chrome.storage.sync.get(['names'], (result) => {
+  chrome.storage.sync.get(['names', 'showHistogram'], (result) => {
+	  
     const names = result.names || [];
     names.forEach(name => addNameToList(name));
+
+    // Set the checkbox state based on the stored value
+    if (result.showHistogram !== undefined) {
+      histogramCheckbox.checked = result.showHistogram;
+    } else {
+      histogramCheckbox.checked = false;
+    }
   });
 
   // Add a new name to the list
@@ -36,7 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const li = document.createElement('li');
     li.textContent = name;
     const removeButton = document.createElement('button');
-    removeButton.textContent = 'Remove';
+    removeButton.textContent = 'Unmute';
     removeButton.addEventListener('click', () => {
       chrome.storage.sync.get(['names'], (result) => {
         const names = result.names || [];
@@ -49,5 +59,10 @@ document.addEventListener('DOMContentLoaded', () => {
     li.appendChild(removeButton);
     nameList.appendChild(li);
   }
+
+  // Update storage when checkbox is clicked
+  histogramCheckbox.addEventListener('change', () => {
+    chrome.storage.sync.set({ showHistogram: histogramCheckbox.checked });
+  });  
 });
 

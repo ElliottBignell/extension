@@ -42,7 +42,7 @@ function processDivs() {
     const urlRegex = /(http[s]?:\/\/.*?\.(?:jpg|jpeg|png|gif))/g;
 
     // Retrieve the list of names from storage and create the histogram
-    chrome.storage.sync.get(['names'], (result) => {
+    browser.storage.sync.get(['names'], (result) => {
 
       const hiddenNames = result.names || [];
 
@@ -81,16 +81,32 @@ function processDivs() {
         if (li) {
         
             // Find all anchor tags within the cite element
-            const anchors = li.querySelectorAll('a[href*=".jpg"], a[href*=".jpeg"], a[href*=".png"], a[href*=".gif"]');
+            const anchors = li.querySelectorAll('a[href*=".jpg"], a[href*=".jpeg"], a[href*=".png"], a[href*=".gif"], a[href*="youtube.com/watch?v="], a[href*="youtu.be/"], a[href*="drive.google.com/file/d/"]');
             
             if (anchors.length > 0) {
                 
-                anchors.forEach(anchor => {
-                
-                  const url = anchor.href;
-                  // Replace the text inside the anchor tag with an img tag
-                  anchor.innerHTML = `<img src="${url}" alt="Image preview" style="max-width: 100%; height: auto;">`;
-                });
+			  anchors.forEach(anchor => {
+				const url = anchor.href;
+				if (url.includes('youtube.com/watch?v=')) {
+				  const videoId = url.split('v=')[1].split('&')[0];
+				  const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+				  // Replace the text inside the anchor tag with an img tag with play button overlay
+				  anchor.innerHTML = `<div class="thumbnail-wrapper"><img src="${thumbnailUrl}" alt="YouTube thumbnail" class="youtube-thumbnail"><div class="play-button"></div></div>`;
+				} else if (url.includes('youtu.be/')) {
+				  const videoId = url.split('be/')[1];
+				  const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+				  // Replace the text inside the anchor tag with an img tag with play button overlay
+				  anchor.innerHTML = `<div class="thumbnail-wrapper"><img src="${thumbnailUrl}" alt="YouTube thumbnail" class="youtube-thumbnail"><div class="play-button"></div></div>`;
+				} else if (url.includes('drive.google.com/file/d/')) {
+				  const fileId = url.split('/d/')[1].split('/')[0];
+				  const thumbnailUrl = `https://drive.google.com/thumbnail?id=${fileId}`;
+				  // Replace the text inside the anchor tag with an img tag
+				  anchor.innerHTML = `<img src="${thumbnailUrl}" class="enhanced-image" alt="$"{url} style="width: 100%; height: auto;">`;
+				} else {
+				  // Replace the text inside the anchor tag with an img tag for other images
+				  anchor.innerHTML = `<img src="${url}" alt="Image preview" style="max-width: 100%; height: auto;">`;
+				}
+			  });
             }
         }
       }
@@ -102,15 +118,18 @@ function processDivs() {
     divs.forEach((div, index) => {
       divList += `Div ${index + 1}: ${div.outerHTML}\n`;
     });
-  });
+
+    // Add toggle buttons to nested comments
+    addToggleButtons();  });
 }
 
 function addNameToList(name) {
-  chrome.storage.sync.get(['names'], (result) => {
+	
+  browser.storage.sync.get(['names'], (result) => {
     const names = result.names || [];
     if (!names.includes(name)) {
       names.push(name);
-      chrome.storage.sync.set({ names }, () => {
+      browser.storage.sync.set({ names }, () => {
         console.log(`Added ${name} to the list`);
         // Optionally, you could provide some feedback to the user here, like disabling the button
       });
@@ -120,49 +139,127 @@ function addNameToList(name) {
 
 function createHistogram(nameCounts, hiddenNames) {
 
-  console.log('Creating histogram');
+  chrome.storage.sync.get(['showHistogram'], (result) => {
+	  
+    if (result.showHistogram !== undefined && result.showHistogram) {
 
-  const histogramContainer = document.createElement('div');
-  histogramContainer.style.marginTop = '20px';
-  histogramContainer.style.padding = '10px';
-  histogramContainer.style.border = '1px solid #ccc';
-  histogramContainer.style.backgroundColor = '#f9f9f9';
+	  console.log('Creating histogram');
 
-  const title = document.createElement('h3');
-  title.textContent = 'Commenter Activity';
-  histogramContainer.appendChild(title);
+	  const histogramContainer = document.createElement('div');
+	  histogramContainer.style.marginTop = '20px';
+	  histogramContainer.style.padding = '10px';
+	  histogramContainer.style.border = '1px solid #ccc';
+	  histogramContainer.style.backgroundColor = '#f9f9f9';
 
-  const maxCount = Math.max(...Object.values(nameCounts));
+	  const title = document.createElement('h3');
+	  title.textContent = 'Commenter Activity';
+	  histogramContainer.appendChild(title);
 
-  Object.keys(nameCounts).forEach(name => {
-    const barContainer = document.createElement('div');
-    barContainer.style.display = 'flex';
-    barContainer.style.alignItems = 'center';
-    barContainer.style.marginBottom = '5px';
+	  const maxCount = Math.max(...Object.values(nameCounts));
 
-    const nameLabel = document.createElement('div');
-    nameLabel.style.width = '150px';
-    nameLabel.textContent = name;
-    barContainer.appendChild(nameLabel);
+	  Object.keys(nameCounts).forEach(name => {
+		const barContainer = document.createElement('div');
+		barContainer.style.display = 'flex';
+		barContainer.style.alignItems = 'center';
+		barContainer.style.marginBottom = '5px';
 
-    const bar = document.createElement('div');
-    bar.style.height = '20px';
-    bar.style.width = `${(nameCounts[name] / maxCount) * 100}%`;
-    bar.style.backgroundColor = hiddenNames.includes(name) ? '#ff4c4c' : '#4caf50'; // Red for hidden users, green for others
-    bar.style.textAlign = 'right';
-    bar.style.paddingRight = '5px';
-    bar.style.color = 'white';
-    barContainer.appendChild(bar);
+		const nameLabel = document.createElement('div');
+		nameLabel.style.width = '150px';
+		nameLabel.textContent = name;
+		barContainer.appendChild(nameLabel);
 
-    const countLabel = document.createElement('div');
-    countLabel.style.marginLeft = '10px';
-    countLabel.textContent = nameCounts[name];
-    barContainer.appendChild(countLabel);
+		const bar = document.createElement('div');
+		bar.style.height = '20px';
+		bar.style.width = `${(nameCounts[name] / maxCount) * 100}%`;
+		bar.style.backgroundColor = hiddenNames.includes(name) ? '#ff4c4c' : '#4caf50'; // Red for hidden users, green for others
+		bar.style.textAlign = 'right';
+		bar.style.paddingRight = '5px';
+		bar.style.color = 'white';
+		barContainer.appendChild(bar);
 
-    histogramContainer.appendChild(barContainer);
+		const countLabel = document.createElement('div');
+		countLabel.style.marginLeft = '10px';
+		countLabel.textContent = nameCounts[name];
+		barContainer.appendChild(countLabel);
+
+		histogramContainer.appendChild(barContainer);
+	  });
+
+	  // Append the histogram to a specific element or at the end of the body
+	  const commentsSection = document.querySelector('#respond') || document.body;
+	  commentsSection.appendChild(histogramContainer);
+	}
   });
-
-  // Append the histogram to a specific element or at the end of the body
-  const commentsSection = document.querySelector('#respond') || document.body;
-  commentsSection.appendChild(histogramContainer);
 }
+
+
+function addToggleButtons() {
+	
+  const comments = document.querySelectorAll('li.comment');
+  comments.forEach(comment => {
+    const children = comment.querySelector('ul.children');
+    if (children) {
+      const cite = comment.querySelector('cite.fn');
+      if (cite) {
+        // Create the toggle button
+        const toggleButton = document.createElement('button');
+        toggleButton.textContent = '➖'; // Initially minus sign (expanded)
+        toggleButton.style.marginRight = '10px';
+        toggleButton.addEventListener('click', () => {
+          const commentBody = comment.querySelector('.comment-body');
+          if (children.style.display === 'none') {
+            children.style.display = '';
+            toggleButton.textContent = '➖';
+            commentBody.classList.remove('comment-body-collapsed');
+          } else {
+            children.style.display = 'none';
+            toggleButton.textContent = '➕';
+            commentBody.classList.add('comment-body-collapsed');
+          }
+        });
+
+        // Insert the toggle button
+        cite.parentNode.insertBefore(toggleButton, cite);
+      }
+    }
+  });
+}
+
+// Add the CSS for the YouTube thumbnail overlay and collapsed comments
+const style = document.createElement('style');
+style.innerHTML = `
+  .thumbnail-wrapper {
+    position: relative;
+    display: inline-block;
+  }
+  .youtube-thumbnail {
+    display: block;
+  }
+  .play-button {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 64px;
+    height: 64px;
+    background: url('https://upload.wikimedia.org/wikipedia/commons/e/e7/Play-button-icon.png') no-repeat center center;
+    background-size: contain;
+    pointer-events: none; /* Ensure the play button does not interfere with clicking the thumbnail */
+  }
+  .enhanced-image {
+    max-width: 100%;
+    height: auto;
+    //filter: contrast(1.5) brightness(1.2) saturate(1.2);
+    display: block;
+  }
+  .comment-body-collapsed :not(:first-of-type) {
+    display: none;
+  }
+  .comment-body-collapsed::after {
+    content: '...';
+    display: block;
+    background: white;
+    padding-left: 10px;
+  }
+`;
+document.head.appendChild(style);

@@ -17,8 +17,8 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://www.drroyspencer.com/*"],
-      "js": ["content.js"],
+      "matches": ["https://www.drroyspencer.com/20*"],
+      "js": ["polyfill.js", "content.js"],
       "css": ["style.css"]
     }
   ],
