@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Tarderase",
   "description": "Plugin for the UAH blog designed to smooth the experience",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "icons": {
     "16": "img/icon_16x16.png",
     "48": "img/icon_48x48.png",
