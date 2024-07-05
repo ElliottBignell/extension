@@ -1,33 +1,74 @@
 <html>
 <head>
     <title>Tarderase</title>
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="style.css" />
+    <!-- Bootstrap CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            width: 300px;
+            font-family: Arial, sans-serif;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 1rem;
+        }
+    </style>
 </head>
 <body>
-  <style>
-    body {
-      width: 300px;
-      font-family: Arial, sans-serif;
-    }
-    ul {
-      padding-left: 0;
-    }
-    li {
-      list-style: none;
-      margin: 5px 0;
-    }
-  </style>
-
   <!-- Body -->
-  <h2>Retard eraser for the UAH blog</h2>
-  <input type="checkbox" id="histogram" name="histogram" value="Show Histogram">
-  <label for="histogram"> Show histogram of user activitye</label><br>
-  <ul id="name-list"></ul>
-  <input type="text" id="name-input" placeholder="Mute a simpleton" />
-  <button id="add-name">Mute</button>
-  <ul id="name-list"></ul>
+  <h2 class="text-center">Retard Eraser for the UAH Blog</h2>
+  
+  <div class="form-group form-check">
+    <input type="checkbox" class="form-check-input" id="histogram" name="histogram" value="Show Histogram">
+    <label class="form-check-label" for="histogram">Show histogram of user activity</label>
+  </div>
+  
+  <div class="form-group form-check">
+    <input type="checkbox" class="form-check-input" id="font" name="font" value="Use sans-serif font">
+    <label class="form-check-label" for="font">Use sans-serif font</label>
+  </div>
+
+  <div class="form-group">
+    <input type="text" class="form-control" id="name-input" placeholder="Mute a simpleton">
+  </div>
+  <button class="btn btn-primary btn-block" id="add-name">Mute</button>
+  
+  <ul id="name-list" class="list-group mt-3"></ul>
+  
+  <h2 class="text-center mt-4">Track Interactions</h2>
+  
+  <div class="form-group form-check">
+    <input type="checkbox" class="form-check-input" id="filter" name="filter" value="Filter by users">
+    <label class="form-check-label" for="filter">Filter by multiple authors</label>
+  </div>
+  
+  <div class="form-group">
+    <input type="text" class="form-control" id="username-input" placeholder="Your Username">
+  </div>
+  <button class="btn btn-secondary btn-block" id="save-username">Save Username</button>
+  
+  <ul id="track-users-list" class="list-group mt-3"></ul>
+  
+  <div class="form-group">
+    <input type="text" class="form-control" id="track-user-input" placeholder="Track User">
+  </div>
+  <button class="btn btn-secondary btn-block" id="add-track-user">Add User</button>
+  
+  <div class="form-group mt-3">
+    <label for="start-date">Start Date</label>
+    <input type="date" class="form-control" id="start-date">
+  </div>
+  
+  <div class="form-group">
+    <label for="end-date">End Date</label>
+    <input type="date" class="form-control" id="end-date">
+  </div>
+  
+  <button class="btn btn-info btn-block" id="apply-filters">Apply Filters</button>
+  
   <script src="popup.js"></script>
 </body>
-
 </html>
+

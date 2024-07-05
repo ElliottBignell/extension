@@ -1,10 +1,6 @@
 /* 
   This file contains the CSS of your extension
 */
-body {
-  font-family: sans-serif !important;
-}
-
 .comment-body-collapsed {
  /* position: relative;
   overflow: hidden;
